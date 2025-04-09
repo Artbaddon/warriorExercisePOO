@@ -23,8 +23,8 @@ class Warrior {
 
   constructor(id, name, health, energy, warriorType, breed) {
     // Validate inputs
-    if (typeof id !== "string" && typeof id !== "number") {
-      throw new Error("ID must be a string or number");
+    if (typeof id !== "number") {
+      throw new Error("ID must be a number");
     }
     if (typeof name !== "string" || name.trim() === "") {
       throw new Error("Name must be a non-empty string");
