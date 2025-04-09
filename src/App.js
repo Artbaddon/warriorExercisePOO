@@ -3,27 +3,23 @@ function deleteFromArrayOfObjects(array, item, idField) {
 }
 
 function findId(obj, id, idField) {
-  return obj.findIndex((item) => item[idField] == id);
+  return obj.findIndex((item) => item[idField] === id);
 }
 
 class Warrior {
   static warriors = [];
 
-  constructor(id, name, health, energy) {
+  constructor(id, name, health, energy, warriorType, breed) {
     this.warriorId = id;
     this.warriorName = name;
     this.warriorHealth = health;
     this.warriorEnergy = energy;
-    this.warriorType = null;
-    this.breed = null;
+    this.setWarriorType(warriorType);
+    this.setBreed(breed);
     this.powers = [];
+    Warrior.warriors.push(this);
+    return this;
   }
-  static createWarrior(id, name, health, energy) {
-    const warrior = new Warrior(id, name, health, energy);
-    Warrior.warriors.push(warrior);
-    return warrior;
-  }
-
   viewWarriorInfo() {
     return {
       warrior: {
@@ -31,10 +27,9 @@ class Warrior {
         name: this.warriorName,
         health: this.warriorHealth,
         energy: this.warriorEnergy,
+        breed: this.breed,
       },
-      type: this.warriorType ? this.warriorType.viewWarriorTypeInfo() : null,
-      breed: this.breed ? this.breed.viewBreedInfo() : null,
-      powers: this.powers.map((power) => power.viewPowerInfo()),
+      powers: this.powers !== null ? this.powers.map((power) => power.viewPowerInfo()) : "warrior doesn't have powers",
     };
   }
   static viewAllWarriors() {
@@ -95,14 +90,8 @@ class WarriorType {
     this.warriorTypeId = id;
     this.warriorTypeName = name;
     this.warriorTypeDescription = description;
+    WarriorType.wTypes.push(this);
   }
-
-  static createWarriorType(id, name, description) {
-    const warriorType = new WarriorType(id, name, description);
-    WarriorType.wTypes.push(warriorType);
-    return warriorType;
-  }
-
   updateWarriorType(valueToEdit, newValue) {
     const id = findId(WarriorType.wTypes, this.warriorTypeId, "warriorTypeId");
 
@@ -123,11 +112,11 @@ class WarriorType {
   }
 
   viewWarriorTypeInfo() {
-    return [
-      this.warriorTypeId,
-      this.warriorTypeName,
-      this.warriorTypeDescription,
-    ];
+    return {
+      warriorTypeId: this.warriorTypeId,
+      warriorTypeName: this.warriorTypeName,
+      warriorTypeDescription: this.warriorTypeDescription
+    };
   }
 
   static viewAllWarriorTypes() {
@@ -142,14 +131,8 @@ class Breed {
     this.breedId = id;
     this.breedName = name;
     this.breedDescription = description;
+    Breed.breeds.push(this);
   }
-
-  static createBreed(id, name, description) {
-    const breed = new Breed(id, name, description);
-    Breed.breeds.push(breed);
-    return breed;
-  }
-
   updateBreed(valueToEdit, newValue) {
     const id = findId(Breed.breeds, this.breedId, "breedId");
 
@@ -170,7 +153,7 @@ class Breed {
   }
 
   viewBreedInfo() {
-    return [this.breedId, this.breedName, this.breedDescription];
+    return { breedId: this.breedId, breedName: this.breedName, breedDescription: this.breedDescription };
   }
 
   static viewAllBreeds() {
@@ -187,12 +170,7 @@ class Power {
     this.powerDmg = dmg;
     this.powerEffect = effect;
     this.powerDescription = description;
-  }
-
-  static createPower(id, name, dmg, effect, description) {
-    const power = new Power(id, name, dmg, effect, description);
-    Power.powers.push(power);
-    return power;
+    Power.powers.push(this);
   }
 
   updatePower(valueToEdit, newValue) {
@@ -219,13 +197,13 @@ class Power {
   }
 
   viewPowerInfo() {
-    return [
-      this.powerId,
-      this.powerName,
-      this.powerDmg,
-      this.powerEffect,
-      this.powerDescription,
-    ];
+    return {
+      powerId: this.powerId,
+      powerName: this.powerName,
+      powerDmg: this.powerDmg,
+      powerEffect: this.powerEffect,
+      powerDescription: this.powerDescription
+    }
   }
 
   static viewAllPowers() {
@@ -235,114 +213,297 @@ class Power {
 
 // First, let's create some breeds (races)
 const races = [
-  Breed.createBreed(1, "Yordle", "Small magical creatures from Bandle City"),
-  Breed.createBreed(2, "Human", "Regular humans from Runeterra"),
-  Breed.createBreed(3, "Vastaya", "Chimeric creatures of Ionia"),
-  Breed.createBreed(4, "Void", "Creatures from the Void"),
-  Breed.createBreed(5, "Celestial", "Cosmic beings from Mount Targon")
+  new Breed(1, "Yordle", "Small magical creatures from Bandle City"),
+  new Breed(2, "Human", "Regular humans from Runeterra"),
+  new Breed(3, "Vastaya", "Chimeric creatures of Ionia"),
+  new Breed(4, "Void", "Creatures from the Void"),
+  new Breed(5, "Celestial", "Cosmic beings from Mount Targon")
 ];
 
 // Create warrior types
 const types = [
-  WarriorType.createWarriorType(1, "Assassin", "High burst damage, low health"),
-  WarriorType.createWarriorType(2, "Tank", "High health, high resistance"),
-  WarriorType.createWarriorType(3, "Mage", "High magic damage, low health"),
-  WarriorType.createWarriorType(4, "Marksman", "High sustained damage, low health"),
-  WarriorType.createWarriorType(5, "Support", "High utility, medium health")
+  new WarriorType(1, "Assassin", "High burst damage, low health"),
+  new WarriorType(2, "Tank", "High health, high resistance"),
+  new WarriorType(3, "Mage", "High magic damage, low health"),
+  new WarriorType(4, "Marksman", "High sustained damage, low health"),
+  new WarriorType(5, "Support", "High utility, medium health")
 ];
 
 // Create powers
 const powers = [
-  Power.createPower(1, "Blinding Dart", 70, "Blind", "Blinds and damages the target"),
-  Power.createPower(2, "Move Quick", 0, "Speed", "Increases movement speed"),
-  Power.createPower(3, "Toxic Shot", 40, "Poison", "Poisons the target"),
-  Power.createPower(4, "Noxious Trap", 60, "Trap", "Places a poisonous trap"),
-  Power.createPower(5, "Mystic Shot", 80, "Physical", "Fires an energy bolt"),
-  Power.createPower(6, "Infinite Duress", 100, "Suppress", "Suppresses and damages target"),
-  Power.createPower(7, "Death Mark", 120, "Execute", "Marks target for death"),
-  Power.createPower(8, "Final Spark", 200, "Magic", "Fires a powerful laser beam"),
-  Power.createPower(9, "Crowstorm", 150, "AoE", "Area damage and fear"),
-  Power.createPower(10, "Demacian Justice", 180, "Execute", "Powerful executing strike")
+  new Power(1, "Blinding Dart", 70, "Blind", "Blinds and damages the target"),
+  new Power(2, "Move Quick", 0, "Speed", "Increases movement speed"),
+  new Power(3, "Toxic Shot", 40, "Poison", "Poisons the target"),
+  new Power(4, "Noxious Trap", 60, "Trap", "Places a poisonous trap"),
+  new Power(5, "Mystic Shot", 80, "Physical", "Fires an energy bolt"),
+  new Power(6, "Infinite Duress", 100, "Suppress", "Suppresses and damages target"),
+  new Power(7, "Death Mark", 120, "Execute", "Marks target for death"),
+  new Power(8, "Final Spark", 200, "Magic", "Fires a powerful laser beam"),
+  new Power(9, "Crowstorm", 150, "AoE", "Area damage and fear"),
+  new Power(10, "Demacian Justice", 180, "Execute", "Powerful executing strike")
 ];
 
-// Create 10 warriors with LoL characters
-function createWarriors() {
-  const warriors = [
-    // Yordle Warriors
-    {id: 1, name: "Teemo", health: 80, energy: 100, breed: races[0], type: types[0]},
-    {id: 2, name: "Veigar", health: 70, energy: 120, breed: races[0], type: types[2]},
-    
-    // Human Warriors
-    {id: 3, name: "Garen", health: 150, energy: 100, breed: races[1], type: types[1]},
-    {id: 4, name: "Lux", health: 80, energy: 110, breed: races[1], type: types[2]},
-    
-    // Vastaya Warriors
-    {id: 5, name: "Ahri", health: 90, energy: 100, breed: races[2], type: types[2]},
-    {id: 6, name: "Xayah", health: 85, energy: 100, breed: races[2], type: types[3]},
-    
-    // Void Warriors
-    {id: 7, name: "Khazix", health: 95, energy: 100, breed: races[3], type: types[0]},
-    {id: 8, name: "Velkoz", health: 85, energy: 110, breed: races[3], type: types[2]},
-    
-    // Celestial Warriors
-    {id: 9, name: "Soraka", health: 75, energy: 120, breed: races[4], type: types[4]},
-    {id: 10, name: "Pantheon", health: 100, energy: 100, breed: races[4], type: types[1]}
+// Create warriors id, name, health, energy, warriorType, breed
+const warriors = [
+  // Yordle Warriors
+  new Warrior(1, "Teemo", 80, 100, types[0], races[0]),
+  new Warrior(2, "Veigar", 70, 120, types[2], races[0]),
+  // Human Warriors
+  new Warrior(3, "Garen", 150, 100, types[1], races[1]),
+  new Warrior(4, "Lux", 80, 110, types[2], races[1]),
+  // Vastaya Warriors
+  new Warrior(5, "Ahri", 90, 100, types[2], races[2]),
+  new Warrior(6, "Xayah", 85, 100, types[3], races[2]),
+  // Void Warriors
+  new Warrior(7, "Khazix", 95, 100, types[0], races[3]),
+  new Warrior(8, "Velkoz", 85, 110, types[2], races[3]),
+  // Celestial Warriors
+  new Warrior(9, "Soraka", 75, 120, types[4], races[4],),
+  new Warrior(10, "Pantheon", 100, 100, types[1], races[4])
+
+];
+//assign 5 random powers to warriors
+for (let i = 0; i < warriors.length; i++) {
+  for (let j = 0; j < 5; j++) {
+    const randomIndex = Math.floor(Math.random() * powers.length);
+    warriors[i].addPower(powers[randomIndex]);
+  }
+}
+
+//1. Change View To all Classes
+function changeViewToClasses() {
+  clearMain();
+  //1. Create Card For Each Class
+  let classes = ["Warriors", "WarriorTypes", "Powers", "Races"];
+  for (let i = 0; i < classes.length; i++) {
+    const card = createCardForClass(classes[i]);
+    mainContent.appendChild(card);
+  }
+}
+function clearMain() {
+  mainContent.innerHTML = "";
+}
+function createCardForClass(type) {
+  const card = document.createElement("div")
+  const cardBody = document.createElement("div");
+  const cardTitle = document.createElement("h5");
+  card.classList.add("card");
+  card.classList.add("col");
+  card.classList.add("m-2");
+  cardBody.classList.add("card-body");
+  cardTitle.classList.add("card-title");
+  cardTitle.textContent = type;
+  card.appendChild(cardBody);
+  cardBody.appendChild(cardTitle);
+  cardBody.appendChild(createButtonForCard("Go to"));
+
+  return card;
+}
+
+function createButtonForCard(buttonType) {
+  const button = document.createElement("button");
+  button.classList.add("btn", "btn-primary")
+  button.textContent = buttonType;
+  button.setAttribute("id", "changeViewBtn");
+  button.classList.add("m-1");
+
+  return button;
+
+}
+//1. Change view to warriors
+function viewAllWarriors() {
+  clearMain();
+  const row = document.createElement("div");
+  row.classList.add("row", "d-flex", "flex-wrap");
+  for (let i = 0; i < warriors.length; i++) {
+    const card = createCardForWarrior(warriors[i]);
+    row.appendChild(card);
+  }
+
+  mainContent.appendChild(row);
+}
+function viewAllPowers() {
+  clearMain();
+  const row = document.createElement("div");
+  row.classList.add("row", "d-flex", "flex-wrap");
+  for (let i = 0; i < powers.length; i++) {
+    const card = createCardForPower(powers[i]);
+    row.appendChild(card);
+  }
+  mainContent.appendChild(row);
+}
+function viewAllRaces() {
+  clearMain();
+  const row = document.createElement("div");
+  row.classList.add("row", "d-flex", "flex-wrap");
+  for (let i = 0; i < races.length; i++) {
+    const card = createCardForBreed(races[i]);
+    row.appendChild(card);
+  }
+  mainContent.appendChild(row);
+}
+function viewAllPowers() {
+  clearMain();
+  const row = document.createElement("div");
+  row.classList.add("row", "d-flex", "flex-wrap");
+  for (let i = 0; i < powers.length; i++) {
+    const card = createCardForPower(powers[i]);
+    row.appendChild(card);
+  }
+  mainContent.appendChild(row);
+}
+function viewAllWarriorTypes() {
+  clearMain();
+  const row = document.createElement("div");
+  row.classList.add("row", "d-flex", "flex-wrap");
+  for (let i = 0; i < types.length; i++) {
+    const card = createCardForWarriorType(types[i]);
+    row.appendChild(card);
+  }
+  mainContent.appendChild(row);
+}
+function createCardForWarrior(warrior) {
+  const card = document.createElement("div");
+  const cardBody = document.createElement("div");
+  const cardTitle = document.createElement("h5");
+  const cardList = document.createElement("ul");
+  const id = warrior.warriorId;
+  const idHidden = document.createElement("input");
+
+  const warriorInfo = [
+    `Name: ${warrior.warriorName}`,
+    `Health: ${warrior.warriorHealth}`,
+    `Energy: ${warrior.warriorEnergy}`,
+    `Type: ${warrior.warriorType.warriorTypeName}`,
+    `Breed: ${warrior.breed.breedName}`,
+    `Powers: ${warrior.powers !== null ? warrior.powers.map((power) => power.powerName).join(", ") : "No powers"}`,
   ];
 
-  return warriors.map(w => {
-    const warrior = Warrior.createWarrior(w.id, w.name, w.health, w.energy);
-    warrior.setBreed(w.breed);
-    warrior.setWarriorType(w.type);
-    
-    // Assign 5 random powers to each warrior
-    const shuffledPowers = [...powers].sort(() => Math.random() - 0.5);
-    for (let i = 0; i < 5; i++) {
-      warrior.addPower(shuffledPowers[i]);
-    }
-    
-    return warrior;
-  });
+  idHidden.type = "hidden";
+  idHidden.value = id;
+  card.appendChild(idHidden);
+  // Card styling
+  card.classList.add("card");
+
+  card.classList.add("col-lg-3"); // Smaller on large screens
+  card.classList.add("m-2");
+
+  // Card body styling
+  cardBody.classList.add("card-body");
+
+  cardBody.style.maxHeight = "500px"; // Limit height
+
+  // Title styling
+  cardTitle.classList.add("card-title", "text-center", "mb-3");
+  cardTitle.textContent = warrior.warriorName;
+
+  // List styling
+  cardList.classList.add("list-group", "list-group-flush", "mb-3");
+
+  for (let i = 0; i < warriorInfo.length; i++) {
+    const cardListItem = document.createElement("li");
+    cardListItem.classList.add("list-group-item");
+    cardListItem.style.whiteSpace = "normal"; // Allow text to wrap
+    cardListItem.textContent = warriorInfo[i];
+    cardList.appendChild(cardListItem);
+  }
+
+  // Button container
+  const buttonContainer = document.createElement("div");
+  buttonContainer.classList.add("d-flex", "flex-wrap", "justify-content-center", "gap-2");
+
+  // Create and add buttons
+  buttonContainer.appendChild(createButtonForCard("View", "btn-info"));
+  buttonContainer.appendChild(createButtonForCard("Delete", "btn-danger"));
+  buttonContainer.appendChild(createButtonForCard("Edit", "btn-warning"));
+  buttonContainer.appendChild(createButtonForCard("Add Power", "btn-success"));
+
+  // Build card structure
+  cardBody.appendChild(cardTitle);
+  cardBody.appendChild(cardList);
+  cardBody.appendChild(buttonContainer);
+  card.appendChild(cardBody);
+
+  return card;
 }
-
-// Test cases
-function runTests() {
-  console.log("Running tests...");
-
-  // 1. Create 10 warriors
-  const warriors = createWarriors();
-  console.log("\n1. Created warriors:", warriors.length === 10 ? "✅" : "❌");
-
-  // 2. Check if all warriors have breeds assigned
-  const allHaveBreeds = warriors.every(w => w.breed !== null);
-  console.log("\n2. All warriors have breeds:", allHaveBreeds ? "✅" : "❌");
-
-  // 3. Check if all warriors have types assigned
-  const allHaveTypes = warriors.every(w => w.warriorType !== null);
-  console.log("\n3. All warriors have types:", allHaveTypes ? "✅" : "❌");
-
-  // 4. Check if all warriors have 5 powers
-  const allHavePowers = warriors.every(w => w.powers.length === 5);
-  console.log("\n4. All warriors have 5 powers:", allHavePowers ? "✅" : "❌");
-
-  // 5. View all warriors
-  console.log("\n5. All warriors:");
-  console.log(Warrior.viewAllWarriors());
-
-  // 6. View specific warrior (Teemo)
-  const teemo = warriors.find(w => w.warriorName === "Teemo");
-  console.log("\n6. Specific warrior (Teemo):");
-  console.log(teemo);
-
-  // 7. View warrior with all attributes
-  console.log("\n7. Warrior with all attributes (Teemo):");
-  console.log(teemo.viewWarriorInfo());
+function createCardForBreed(breed) {
+  const card = document.createElement("div");
+  const cardBody = document.createElement("div");
+  const cardTitle = document.createElement("h5");
+  const cardList = document.createElement("ul");
+  card.classList.add("card");
+  card.classList.add("col-lg-3"); // Smaller on large screens
+  card.classList.add("m-2");
+  cardBody.classList.add("card-body");
+  cardTitle.classList.add("card-title", "text-center", "mb-3");
+  cardTitle.textContent = breed.breedName;
+  cardList.classList.add("list-group", "list-group-flush", "mb-3");
+  const cardListItem = document.createElement("li");
+  cardListItem.classList.add("list-group-item");
+  cardListItem.style.whiteSpace = "normal"; // Allow text to wrap
+  cardListItem.textContent = breed.breedDescription;
+  cardList.appendChild(cardListItem);
+  cardBody.appendChild(cardList);
+  cardBody.appendChild(cardTitle);
+  card.appendChild(cardBody);
+  return card;
 }
+function createCardForPower(power) {
+  const card = document.createElement("div");
+  const cardBody = document.createElement("div");
+  const cardTitle = document.createElement("h5");
+  const cardList = document.createElement("ul");
+  card.classList.add("card");
+  card.classList.add("col-lg-3"); // Smaller on large screens
+  card.classList.add("m-2");
+  cardBody.classList.add("card-body");
+  cardTitle.classList.add("card-title", "text-center", "mb-3");
+  cardTitle.textContent = power.powerName;
+  cardList.classList.add("list-group", "list-group-flush", "mb-3");
+  const cardListItem = document.createElement("li");
+  cardListItem.classList.add("list-group-item");
+  cardListItem.style.whiteSpace = "normal"; // Allow text to wrap
+  cardListItem.textContent = power.powerDescription;
+  cardList.appendChild(cardListItem);
+  cardBody.appendChild(cardList);
+  cardBody.appendChild(cardTitle);
+  card.appendChild(cardBody);
+  return card;
+}
+function createCardForWarriorType(warriorType) {
+  const card = document.createElement("div");
+  const cardBody = document.createElement("div");
+  const cardTitle = document.createElement("h5");
+  const cardList = document.createElement("ul");
+  card.classList.add("card");
+  card.classList.add("col-lg-3"); // Smaller on large screens
+  card.classList.add("m-2");
+  cardBody.classList.add("card-body");
+  cardTitle.classList.add("card-title", "text-center", "mb-3");
+  cardTitle.textContent = warriorType.warriorTypeName;
+  cardList.classList.add("list-group", "list-group-flush", "mb-3");
+  const cardListItem = document.createElement("li");
+  cardListItem.classList.add("list-group-item");
+  cardListItem.style.whiteSpace = "normal"; // Allow text to wrap
+  cardListItem.textContent = warriorType.warriorTypeDescription;
+  cardList.appendChild(cardListItem);
+  cardBody.appendChild(cardList);
+  cardBody.appendChild(cardTitle);
+  card.appendChild(cardBody);
+  return card;
+}
+function createButtonForCard(buttonText, buttonClass) {
+  const button = document.createElement("button");
+  button.classList.add("btn", buttonClass, "btn-sm");
+  button.textContent = buttonText;
+  button.style.whiteSpace = "nowrap";
+  return button;
+}
+//2. Change view to powers
+//3. Change view to races
 
-// Run the tests
-runTests();
-
-// Example of updating a warrior
-const teemo = Warrior.warriors.find(w => w.warriorName === "Teemo");
-teemo.updateWarrior("health", 90);
-console.log("\nUpdated Teemo's health:");
-console.log(teemo.viewWarriorInfo());
+// Get main content
+let mainContent = document.querySelector(".main-content");
+// Button for starting
+const startBtn = document.querySelector("#startBtn");
+startBtn.addEventListener("click", changeViewToClasses);
