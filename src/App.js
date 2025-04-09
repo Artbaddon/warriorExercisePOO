@@ -398,25 +398,6 @@ class Power {
   }
 }
 
-// First, let's create some breeds (races)
-const races = [
-  new Breed(1, "Yordle", "Small magical creatures from Bandle City"),
-  new Breed(2, "Human", "Regular humans from Runeterra"),
-  new Breed(3, "Vastaya", "Chimeric creatures of Ionia"),
-  new Breed(4, "Void", "Creatures from the Void"),
-  new Breed(5, "Celestial", "Cosmic beings from Mount Targon"),
-];
-
-// Create warrior types
-const types = [
-  new WarriorType(1, "Assassin", "High burst damage, low health"),
-  new WarriorType(2, "Tank", "High health, high resistance"),
-  new WarriorType(3, "Mage", "High magic damage, low health"),
-  new WarriorType(4, "Marksman", "High sustained damage, low health"),
-  new WarriorType(5, "Support", "High utility, medium health"),
-];
-
-// First, let's create some breeds (races)
 const races = [
   new Breed(1, "Human", "Regular humans from various islands"),
   new Breed(2, "Fishman", "Humanoid fish-people from the sea"),
@@ -425,7 +406,6 @@ const races = [
   new Breed(5, "Cyborg", "Partially mechanical humans"),
 ];
 
-// Create warrior types
 const types = [
   new WarriorType(1, "Swordsman", "Masters of blade combat"),
   new WarriorType(2, "Brawler", "Close-quarters combat specialists"),
@@ -434,7 +414,6 @@ const types = [
   new WarriorType(5, "Captain", "Strong leaders with versatile skills"),
 ];
 
-// Create powers (devil fruits and special abilities)
 const powers = [
   new Power(1, "Gomu Gomu no Mi", 80, "Rubber", "Turns body into rubber"),
   new Power(
