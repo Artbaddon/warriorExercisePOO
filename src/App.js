@@ -1,8 +1,20 @@
 function deleteFromArrayOfObjects(array, item, idField) {
+  if (!Array.isArray(array)) {
+    throw new Error("First argument must be an array");
+  }
+  if (typeof idField !== "string") {
+    throw new Error("idField must be a string");
+  }
   return array.filter((ele) => ele[idField] !== item);
 }
 
 function findId(obj, id, idField) {
+  if (!Array.isArray(obj)) {
+    throw new Error("First argument must be an array");
+  }
+  if (typeof idField !== "string") {
+    throw new Error("idField must be a string");
+  }
   return obj.findIndex((item) => item[idField] === id);
 }
 
@@ -10,8 +22,35 @@ class Warrior {
   static warriors = [];
 
   constructor(id, name, health, energy, warriorType, breed) {
+    // Validate inputs
+    if (typeof id !== "string" && typeof id !== "number") {
+      throw new Error("ID must be a string or number");
+    }
+    if (typeof name !== "string" || name.trim() === "") {
+      throw new Error("Name must be a non-empty string");
+    }
+    if (typeof health !== "number" || health < 0) {
+      throw new Error("Health must be a non-negative number");
+    }
+    if (typeof energy !== "number" || energy < 0) {
+      throw new Error("Energy must be a non-negative number");
+    }
+    if (!(warriorType instanceof WarriorType)) {
+      throw new Error(
+        "Invalid Warrior Type: must be an instance of WarriorType"
+      );
+    }
+    if (!(breed instanceof Breed)) {
+      throw new Error("Invalid Breed: must be an instance of Breed");
+    }
+
+    // Check for duplicate ID
+    if (Warrior.warriors.some((w) => w.warriorId === id)) {
+      throw new Error(`Warrior with ID ${id} already exists`);
+    }
+
     this.warriorId = id;
-    this.warriorName = name;
+    this.warriorName = name.trim();
     this.warriorHealth = health;
     this.warriorEnergy = energy;
     this.setWarriorType(warriorType);
@@ -20,6 +59,7 @@ class Warrior {
     Warrior.warriors.push(this);
     return this;
   }
+
   viewWarriorInfo() {
     return {
       warrior: {
@@ -27,95 +67,159 @@ class Warrior {
         name: this.warriorName,
         health: this.warriorHealth,
         energy: this.warriorEnergy,
-        breed: this.breed,
+        breed: this.breed.viewBreedInfo(),
+        warriorType: this.warriorType.viewWarriorTypeInfo(),
       },
-      powers: this.powers !== null ? this.powers.map((power) => power.viewPowerInfo()) : "warrior doesn't have powers",
+      powers:
+        this.powers.length > 0
+          ? this.powers.map((power) => power.viewPowerInfo())
+          : "warrior doesn't have powers",
     };
   }
+
   static viewAllWarriors() {
     return this.warriors;
   }
 
   updateWarrior(valueToEdit, newValue) {
+    const validProperties = ["name", "health", "energy"];
+    if (!validProperties.includes(valueToEdit)) {
+      throw new Error(`Invalid property to update: ${valueToEdit}`);
+    }
+
     const id = findId(Warrior.warriors, this.warriorId, "warriorId");
+    if (id === -1) {
+      throw new Error("Warrior not found");
+    }
 
     if (valueToEdit === "name") {
-      Warrior.warriors[id].warriorName = newValue;
+      if (typeof newValue !== "string" || newValue.trim() === "") {
+        throw new Error("Name must be a non-empty string");
+      }
+      Warrior.warriors[id].warriorName = newValue.trim();
     } else if (valueToEdit === "health") {
+      if (typeof newValue !== "number" || newValue < 0) {
+        throw new Error("Health must be a non-negative number");
+      }
       Warrior.warriors[id].warriorHealth = newValue;
     } else if (valueToEdit === "energy") {
+      if (typeof newValue !== "number" || newValue < 0) {
+        throw new Error("Energy must be a non-negative number");
+      }
       Warrior.warriors[id].warriorEnergy = newValue;
     }
     return Warrior.warriors[id];
   }
 
-  // Also add delete method for consistency
   deleteWarrior() {
+    const initialLength = Warrior.warriors.length;
     Warrior.warriors = deleteFromArrayOfObjects(
       Warrior.warriors,
       this.warriorId,
       "warriorId"
     );
+    if (Warrior.warriors.length === initialLength) {
+      throw new Error("Warrior not found or could not be deleted");
+    }
   }
 
   addPower(power) {
-    if (power instanceof Power) {
-      this.powers.push(power);
-    } else {
-      throw new Error("Invalid Power");
+    if (!(power instanceof Power)) {
+      throw new Error("Invalid Power: must be an instance of Power");
     }
+    // Check if power already exists
+    if (this.powers.some((p) => p.powerId === power.powerId)) {
+      throw new Error(
+        `Power with ID ${power.powerId} already exists for this warrior`
+      );
+    }
+    this.powers.push(power);
   }
+
   setBreed(breed) {
-    if (breed instanceof Breed) {
-      this.breed = breed;
-    } else {
-      throw new Error("Invalid Breed");
+    if (!(breed instanceof Breed)) {
+      throw new Error("Invalid Breed: must be an instance of Breed");
     }
+    this.breed = breed;
   }
+
   setWarriorType(warriorType) {
-    if (warriorType instanceof WarriorType) {
-      this.warriorType = warriorType;
-    } else {
-      throw new Error("Invalid Warrior Type");
+    if (!(warriorType instanceof WarriorType)) {
+      throw new Error(
+        "Invalid Warrior Type: must be an instance of WarriorType"
+      );
     }
+    this.warriorType = warriorType;
   }
-
-
 }
 
 class WarriorType {
   static wTypes = [];
 
   constructor(id, name, description) {
+    if (typeof id !== "string" && typeof id !== "number") {
+      throw new Error("ID must be a string or number");
+    }
+    if (typeof name !== "string" || name.trim() === "") {
+      throw new Error("Name must be a non-empty string");
+    }
+    if (typeof description !== "string" || description.trim() === "") {
+      throw new Error("Description must be a non-empty string");
+    }
+
+    // Check for duplicate ID
+    if (WarriorType.wTypes.some((wt) => wt.warriorTypeId === id)) {
+      throw new Error(`WarriorType with ID ${id} already exists`);
+    }
+
     this.warriorTypeId = id;
-    this.warriorTypeName = name;
-    this.warriorTypeDescription = description;
+    this.warriorTypeName = name.trim();
+    this.warriorTypeDescription = description.trim();
     WarriorType.wTypes.push(this);
   }
+
   updateWarriorType(valueToEdit, newValue) {
+    const validProperties = ["name", "description"];
+    if (!validProperties.includes(valueToEdit)) {
+      throw new Error(`Invalid property to update: ${valueToEdit}`);
+    }
+
     const id = findId(WarriorType.wTypes, this.warriorTypeId, "warriorTypeId");
+    if (id === -1) {
+      throw new Error("WarriorType not found");
+    }
 
     if (valueToEdit === "name") {
-      WarriorType.wTypes[id].warriorTypeName = newValue;
+      if (typeof newValue !== "string" || newValue.trim() === "") {
+        throw new Error("Name must be a non-empty string");
+      }
+      WarriorType.wTypes[id].warriorTypeName = newValue.trim();
     } else if (valueToEdit === "description") {
-      WarriorType.wTypes[id].warriorTypeDescription = newValue;
+      if (typeof newValue !== "string" || newValue.trim() === "") {
+        throw new Error("Description must be a non-empty string");
+      }
+      WarriorType.wTypes[id].warriorTypeDescription = newValue.trim();
     }
     return WarriorType.wTypes[id];
   }
 
   deleteWarriorType() {
+    const initialLength = WarriorType.wTypes.length;
     WarriorType.wTypes = deleteFromArrayOfObjects(
       WarriorType.wTypes,
       this.warriorTypeId,
       "warriorTypeId"
     );
+    if (WarriorType.wTypes.length === initialLength) {
+      throw new Error("WarriorType not found or could not be deleted");
+    }
   }
 
   viewWarriorTypeInfo() {
     return {
       warriorTypeId: this.warriorTypeId,
       warriorTypeName: this.warriorTypeName,
-      warriorTypeDescription: this.warriorTypeDescription
+      warriorTypeDescription: this.warriorTypeDescription,
     };
   }
 
@@ -128,32 +232,70 @@ class Breed {
   static breeds = [];
 
   constructor(id, name, description) {
+    if (typeof id !== "string" && typeof id !== "number") {
+      throw new Error("ID must be a string or number");
+    }
+    if (typeof name !== "string" || name.trim() === "") {
+      throw new Error("Name must be a non-empty string");
+    }
+    if (typeof description !== "string" || description.trim() === "") {
+      throw new Error("Description must be a non-empty string");
+    }
+
+    // Check for duplicate ID
+    if (Breed.breeds.some((b) => b.breedId === id)) {
+      throw new Error(`Breed with ID ${id} already exists`);
+    }
+
     this.breedId = id;
-    this.breedName = name;
-    this.breedDescription = description;
+    this.breedName = name.trim();
+    this.breedDescription = description.trim();
     Breed.breeds.push(this);
   }
+
   updateBreed(valueToEdit, newValue) {
+    const validProperties = ["name", "description"];
+    if (!validProperties.includes(valueToEdit)) {
+      throw new Error(`Invalid property to update: ${valueToEdit}`);
+    }
+
     const id = findId(Breed.breeds, this.breedId, "breedId");
+    if (id === -1) {
+      throw new Error("Breed not found");
+    }
 
     if (valueToEdit === "name") {
-      Breed.breeds[id].breedName = newValue;
+      if (typeof newValue !== "string" || newValue.trim() === "") {
+        throw new Error("Name must be a non-empty string");
+      }
+      Breed.breeds[id].breedName = newValue.trim();
     } else if (valueToEdit === "description") {
-      Breed.breeds[id].breedDescription = newValue;
+      if (typeof newValue !== "string" || newValue.trim() === "") {
+        throw new Error("Description must be a non-empty string");
+      }
+      Breed.breeds[id].breedDescription = newValue.trim();
     }
     return Breed.breeds[id];
   }
 
   deleteBreed() {
+    const initialLength = Breed.breeds.length;
     Breed.breeds = deleteFromArrayOfObjects(
       Breed.breeds,
       this.breedId,
       "breedId"
     );
+    if (Breed.breeds.length === initialLength) {
+      throw new Error("Breed not found or could not be deleted");
+    }
   }
 
   viewBreedInfo() {
-    return { breedId: this.breedId, breedName: this.breedName, breedDescription: this.breedDescription };
+    return {
+      breedId: this.breedId,
+      breedName: this.breedName,
+      breedDescription: this.breedDescription,
+    };
   }
 
   static viewAllBreeds() {
@@ -165,35 +307,80 @@ class Power {
   static powers = [];
 
   constructor(id, name, dmg, effect, description) {
+    if (typeof id !== "string" && typeof id !== "number") {
+      throw new Error("ID must be a string or number");
+    }
+    if (typeof name !== "string" || name.trim() === "") {
+      throw new Error("Name must be a non-empty string");
+    }
+    if (typeof dmg !== "number" || dmg < 0) {
+      throw new Error("Damage must be a non-negative number");
+    }
+    if (typeof effect !== "string" || effect.trim() === "") {
+      throw new Error("Effect must be a non-empty string");
+    }
+    if (typeof description !== "string" || description.trim() === "") {
+      throw new Error("Description must be a non-empty string");
+    }
+
+    // Check for duplicate ID
+    if (Power.powers.some((p) => p.powerId === id)) {
+      throw new Error(`Power with ID ${id} already exists`);
+    }
+
     this.powerId = id;
-    this.powerName = name;
+    this.powerName = name.trim();
     this.powerDmg = dmg;
-    this.powerEffect = effect;
-    this.powerDescription = description;
+    this.powerEffect = effect.trim();
+    this.powerDescription = description.trim();
     Power.powers.push(this);
   }
 
   updatePower(valueToEdit, newValue) {
+    const validProperties = ["name", "dmg", "effect", "description"];
+    if (!validProperties.includes(valueToEdit)) {
+      throw new Error(`Invalid property to update: ${valueToEdit}`);
+    }
+
     const id = findId(Power.powers, this.powerId, "powerId");
+    if (id === -1) {
+      throw new Error("Power not found");
+    }
 
     if (valueToEdit === "name") {
-      Power.powers[id].powerName = newValue;
+      if (typeof newValue !== "string" || newValue.trim() === "") {
+        throw new Error("Name must be a non-empty string");
+      }
+      Power.powers[id].powerName = newValue.trim();
     } else if (valueToEdit === "dmg") {
+      if (typeof newValue !== "number" || newValue < 0) {
+        throw new Error("Damage must be a non-negative number");
+      }
       Power.powers[id].powerDmg = newValue;
     } else if (valueToEdit === "effect") {
-      Power.powers[id].powerEffect = newValue;
+      if (typeof newValue !== "string" || newValue.trim() === "") {
+        throw new Error("Effect must be a non-empty string");
+      }
+      Power.powers[id].powerEffect = newValue.trim();
     } else if (valueToEdit === "description") {
-      Power.powers[id].powerDescription = newValue;
+      if (typeof newValue !== "string" || newValue.trim() === "") {
+        throw new Error("Description must be a non-empty string");
+      }
+      Power.powers[id].powerDescription = newValue.trim();
     }
     return Power.powers[id];
   }
 
   deletePower() {
+    const initialLength = Power.powers.length;
     Power.powers = deleteFromArrayOfObjects(
       Power.powers,
       this.powerId,
       "powerId"
     );
+    if (Power.powers.length === initialLength) {
+      throw new Error("Power not found or could not be deleted");
+    }
   }
 
   viewPowerInfo() {
@@ -202,8 +389,8 @@ class Power {
       powerName: this.powerName,
       powerDmg: this.powerDmg,
       powerEffect: this.powerEffect,
-      powerDescription: this.powerDescription
-    }
+      powerDescription: this.powerDescription,
+    };
   }
 
   static viewAllPowers() {
@@ -217,7 +404,7 @@ const races = [
   new Breed(2, "Human", "Regular humans from Runeterra"),
   new Breed(3, "Vastaya", "Chimeric creatures of Ionia"),
   new Breed(4, "Void", "Creatures from the Void"),
-  new Breed(5, "Celestial", "Cosmic beings from Mount Targon")
+  new Breed(5, "Celestial", "Cosmic beings from Mount Targon"),
 ];
 
 // Create warrior types
@@ -226,7 +413,7 @@ const types = [
   new WarriorType(2, "Tank", "High health, high resistance"),
   new WarriorType(3, "Mage", "High magic damage, low health"),
   new WarriorType(4, "Marksman", "High sustained damage, low health"),
-  new WarriorType(5, "Support", "High utility, medium health")
+  new WarriorType(5, "Support", "High utility, medium health"),
 ];
 
 // Create powers
@@ -236,11 +423,23 @@ const powers = [
   new Power(3, "Toxic Shot", 40, "Poison", "Poisons the target"),
   new Power(4, "Noxious Trap", 60, "Trap", "Places a poisonous trap"),
   new Power(5, "Mystic Shot", 80, "Physical", "Fires an energy bolt"),
-  new Power(6, "Infinite Duress", 100, "Suppress", "Suppresses and damages target"),
+  new Power(
+    6,
+    "Infinite Duress",
+    100,
+    "Suppress",
+    "Suppresses and damages target"
+  ),
   new Power(7, "Death Mark", 120, "Execute", "Marks target for death"),
   new Power(8, "Final Spark", 200, "Magic", "Fires a powerful laser beam"),
   new Power(9, "Crowstorm", 150, "AoE", "Area damage and fear"),
-  new Power(10, "Demacian Justice", 180, "Execute", "Powerful executing strike")
+  new Power(
+    10,
+    "Demacian Justice",
+    180,
+    "Execute",
+    "Powerful executing strike"
+  ),
 ];
 
 // Create warriors id, name, health, energy, warriorType, breed
@@ -258,9 +457,8 @@ const warriors = [
   new Warrior(7, "Khazix", 95, 100, types[0], races[3]),
   new Warrior(8, "Velkoz", 85, 110, types[2], races[3]),
   // Celestial Warriors
-  new Warrior(9, "Soraka", 75, 120, types[4], races[4],),
-  new Warrior(10, "Pantheon", 100, 100, types[1], races[4])
-
+  new Warrior(9, "Soraka", 75, 120, types[4], races[4]),
+  new Warrior(10, "Pantheon", 100, 100, types[1], races[4]),
 ];
 //assign 5 random powers to warriors
 for (let i = 0; i < warriors.length; i++) {
