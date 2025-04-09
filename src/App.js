@@ -416,54 +416,73 @@ const types = [
   new WarriorType(5, "Support", "High utility, medium health"),
 ];
 
-// Create powers
+// First, let's create some breeds (races)
+const races = [
+  new Breed(1, "Human", "Regular humans from various islands"),
+  new Breed(2, "Fishman", "Humanoid fish-people from the sea"),
+  new Breed(3, "Giant", "Enormous humanoids from Elbaf"),
+  new Breed(4, "Mink", "Animal-human hybrids from Zou"),
+  new Breed(5, "Cyborg", "Partially mechanical humans"),
+];
+
+// Create warrior types
+const types = [
+  new WarriorType(1, "Swordsman", "Masters of blade combat"),
+  new WarriorType(2, "Brawler", "Close-quarters combat specialists"),
+  new WarriorType(3, "Sniper", "Long-range fighters"),
+  new WarriorType(4, "Navigator", "Skilled in weather manipulation"),
+  new WarriorType(5, "Captain", "Strong leaders with versatile skills"),
+];
+
+// Create powers (devil fruits and special abilities)
 const powers = [
-  new Power(1, "Blinding Dart", 70, "Blind", "Blinds and damages the target"),
-  new Power(2, "Move Quick", 0, "Speed", "Increases movement speed"),
-  new Power(3, "Toxic Shot", 40, "Poison", "Poisons the target"),
-  new Power(4, "Noxious Trap", 60, "Trap", "Places a poisonous trap"),
-  new Power(5, "Mystic Shot", 80, "Physical", "Fires an energy bolt"),
+  new Power(1, "Gomu Gomu no Mi", 80, "Rubber", "Turns body into rubber"),
   new Power(
-    6,
-    "Infinite Duress",
-    100,
-    "Suppress",
-    "Suppresses and damages target"
+    2,
+    "Haki",
+    70,
+    "Willpower",
+    "Armament, Observation, or Conqueror's Haki"
   ),
-  new Power(7, "Death Mark", 120, "Execute", "Marks target for death"),
-  new Power(8, "Final Spark", 200, "Magic", "Fires a powerful laser beam"),
-  new Power(9, "Crowstorm", 150, "AoE", "Area damage and fear"),
-  new Power(
-    10,
-    "Demacian Justice",
-    180,
-    "Execute",
-    "Powerful executing strike"
-  ),
+  new Power(3, "Soru", 50, "Speed", "High-speed movement technique"),
+  new Power(4, "Santoryu", 90, "Swords", "Three-sword style techniques"),
+  new Power(5, "Diable Jambe", 85, "Fire", "Legs ignite with flames"),
+  new Power(6, "Usopp Hammer", 60, "Impact", "Powerful hammer attacks"),
+  new Power(7, "Tact", 40, "Weather", "Weather manipulation"),
+  new Power(8, "Chopper Medicine", 30, "Heal", "Medical knowledge and skills"),
+  new Power(9, "Franky Radical Beam", 100, "Laser", "Powerful laser attack"),
+  new Power(10, "Brook's Music", 55, "Soul", "Soul-powered music attacks"),
 ];
 
 // Create warriors id, name, health, energy, warriorType, breed
 const warriors = [
-  // Yordle Warriors
-  new Warrior(1, "Teemo", 80, 100, types[0], races[0]),
-  new Warrior(2, "Veigar", 70, 120, types[2], races[0]),
   // Human Warriors
-  new Warrior(3, "Garen", 150, 100, types[1], races[1]),
-  new Warrior(4, "Lux", 80, 110, types[2], races[1]),
-  // Vastaya Warriors
-  new Warrior(5, "Ahri", 90, 100, types[2], races[2]),
-  new Warrior(6, "Xayah", 85, 100, types[3], races[2]),
-  // Void Warriors
-  new Warrior(7, "Khazix", 95, 100, types[0], races[3]),
-  new Warrior(8, "Velkoz", 85, 110, types[2], races[3]),
-  // Celestial Warriors
-  new Warrior(9, "Soraka", 75, 120, types[4], races[4]),
-  new Warrior(10, "Pantheon", 100, 100, types[1], races[4]),
+  new Warrior(1, "Monkey D. Luffy", 200, 150, types[4], races[0]),
+  new Warrior(2, "Roronoa Zoro", 180, 130, types[0], races[0]),
+  // Fishman Warriors
+  new Warrior(3, "Jinbe", 190, 120, types[2], races[1]),
+  // Giant Warriors
+  new Warrior(4, "Hajrudin", 250, 100, types[1], races[2]),
+  // Mink Warriors
+  new Warrior(5, "Nekomamushi", 170, 140, types[1], races[3]),
+  new Warrior(6, "Inuarashi", 170, 140, types[1], races[3]),
+  // Cyborg Warriors
+  new Warrior(7, "Franky", 160, 120, types[1], races[4]),
+  // Other Humans
+  new Warrior(8, "Sanji", 150, 150, types[1], races[0]),
+  new Warrior(9, "Nami", 100, 110, types[3], races[0]),
+  new Warrior(10, "Usopp", 110, 100, types[2], races[0]),
 ];
-//assign 5 random powers to warriors
+
+// Assign 5 random powers to warriors
 for (let i = 0; i < warriors.length; i++) {
   for (let j = 0; j < 5; j++) {
     const randomIndex = Math.floor(Math.random() * powers.length);
-    warriors[i].addPower(powers[randomIndex]);
+    try {
+      warriors[i].addPower(powers[randomIndex]);
+    } catch (e) {
+      // Skip if power already exists for this warrior
+      j--;
+    }
   }
 }
